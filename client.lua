@@ -1,4 +1,13 @@
-local QBCore = exports['qb-core']:GetCoreObject()
+ESX = nil
+
+Citizen.CreateThread(function()
+  while ESX == nil do
+    TriggerEvent('esx:getSharedObject', function(obj) ESX = obj end)
+    Citizen.Wait(30)
+  end
+end)
+
+
 local camZPlus1 = 1500
 local camZPlus2 = 50
 local pointCamCoords = 75
@@ -26,7 +35,7 @@ RegisterNetEvent('qb-spawn:client:openUI', function(value)
     DoScreenFadeOut(250)
     Wait(1000)
     DoScreenFadeIn(250)
-    QBCore.Functions.GetPlayerData(function(PlayerData)
+    ESX.GetPlayerData(function(PlayerData)
         cam = CreateCamWithParams("DEFAULT_SCRIPTED_CAMERA", PlayerData.position.x, PlayerData.position.y, PlayerData.position.z + camZPlus1, -85.00, 0.00, 0.00, 100.00, false, 0)
         SetCamActive(cam, true)
         RenderScriptCams(true, false, 1, true, true)
@@ -41,7 +50,7 @@ end)
 
 RegisterNetEvent('qb-spawn:client:setupSpawns', function(cData, new, apps)
     if not new then
-        QBCore.Functions.TriggerCallback('qb-spawn:server:getOwnedHouses', function(houses)
+        ESX.TriggerServerCallback('qb-spawn:server:getOwnedHouses', function(houses)
             local myHouses = {}
             if houses ~= nil then
                 for i = 1, (#houses), 1 do
@@ -113,7 +122,7 @@ RegisterNUICallback('setCam', function(data)
     end
 
     if type == "current" then
-        QBCore.Functions.GetPlayerData(function(PlayerData)
+        ESX.GetPlayerData(function(PlayerData)
             SetCam(PlayerData.position)
         end)
     elseif type == "house" then
@@ -132,8 +141,8 @@ RegisterNUICallback('chooseAppa', function(data)
     DoScreenFadeOut(500)
     Wait(5000)
     TriggerServerEvent("apartments:server:CreateApartment", appaYeet, Apartments.Locations[appaYeet].label)
-    TriggerServerEvent('QBCore:Server:OnPlayerLoaded')
-    TriggerEvent('QBCore:Client:OnPlayerLoaded')
+    TriggerServerEvent('esx:playerLoaded')
+    TriggerEvent('esx:playerLoaded')
     FreezeEntityPosition(ped, false)
     RenderScriptCams(false, true, 500, true, true)
     SetCamActive(cam, false)
@@ -165,12 +174,12 @@ RegisterNUICallback('spawnplayer', function(data)
     local location = tostring(data.spawnloc)
     local type = tostring(data.typeLoc)
     local ped = PlayerPedId()
-    local PlayerData = QBCore.Functions.GetPlayerData()
+    local PlayerData = ESX.GetPlayerData()
     local insideMeta = PlayerData.metadata["inside"]
 
     if type == "current" then
         PreSpawnPlayer()
-        QBCore.Functions.GetPlayerData(function(PlayerData)
+            ESX.GetPlayerData(function(PlayerData)
             SetEntityCoords(PlayerPedId(), PlayerData.position.x, PlayerData.position.y, PlayerData.position.z)
             SetEntityHeading(PlayerPedId(), PlayerData.position.a)
             FreezeEntityPosition(PlayerPedId(), false)
@@ -184,14 +193,14 @@ RegisterNUICallback('spawnplayer', function(data)
             local apartmentId = insideMeta.apartment.apartmentId
             TriggerEvent('qb-apartments:client:LastLocationHouse', apartmentType, apartmentId)
         end
-        TriggerServerEvent('QBCore:Server:OnPlayerLoaded')
-        TriggerEvent('QBCore:Client:OnPlayerLoaded')
+        TriggerServerEvent('esx:playerLoaded')
+        TriggerEvent('esx:playerLoaded')
         PostSpawnPlayer()
     elseif type == "house" then
         PreSpawnPlayer()
         TriggerEvent('qb-houses:client:enterOwnedHouse', location)
-        TriggerServerEvent('QBCore:Server:OnPlayerLoaded')
-        TriggerEvent('QBCore:Client:OnPlayerLoaded')
+        TriggerServerEvent('esx:playerLoaded')
+        TriggerEvent('esx:playerLoaded')
         TriggerServerEvent('qb-houses:server:SetInsideMeta', 0, false)
         TriggerServerEvent('qb-apartments:server:SetInsideMeta', 0, 0, false)
         PostSpawnPlayer()
@@ -199,8 +208,8 @@ RegisterNUICallback('spawnplayer', function(data)
         local pos = QB.Spawns[location].coords
         PreSpawnPlayer()
         SetEntityCoords(ped, pos.x, pos.y, pos.z)
-        TriggerServerEvent('QBCore:Server:OnPlayerLoaded')
-        TriggerEvent('QBCore:Client:OnPlayerLoaded')
+        TriggerServerEvent('esx:playerLoaded')
+        TriggerEvent('esx:playerLoaded')
         TriggerServerEvent('qb-houses:server:SetInsideMeta', 0, false)
         TriggerServerEvent('qb-apartments:server:SetInsideMeta', 0, 0, false)
         Wait(500)
